@@ -1,0 +1,20 @@
+{
+    "Lua.diagnostics.globals": [
+        "defines",
+        "game",
+        "serpent",
+        "log",
+        "script",
+        "settings",
+        "global",
+        "currentLinks",
+        "data",
+        "__DebugAdapter",
+        "release",
+        "indent",
+        "dassert"
+    ],
+    "Lua.diagnostics.disable": [
+        "redefined-local"
+    ]
+}
