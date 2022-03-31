@@ -6,8 +6,8 @@ local furnace = data.raw.furnace["stone-furnace"]
 furnace.energy_source = {
     type = "heat",
     max_temperature = 1000,
-    specific_heat = "1kJ",
-    max_transfer = "2MW",
+    specific_heat = "1MJ",
+    max_transfer = "200kW",
     min_working_temperature = 120,
     minimum_glow_temperature = 120,
     connections = {
@@ -51,16 +51,16 @@ data:extend{
         icon_size = 64,
         icon_mipmaps = 4,
         flags = {"placeable-neutral", "player-creation"},
-        minable = {mining_time = 0.5, result = "burner"},
-        max_health = 500,
+        minable = {mining_time = 0.1, result = "burner"},
+        max_health = 100,
         --energy_usage = "100kW",
         --energy_consumption = "100kW",
-        consumption = "100kW",
+        consumption = "100MW",
         --target_temperature = 350,
         energy_source = {
             type = "burner",
             fuel_category = "chemical",
-            effectivity = 1,
+            effectivity = 10,
             fuel_inventory_size = 1,
             emissions_per_minute = 30,
             light_flicker = {color = {0, 0, 0}, minimum_intensity = 0.6, maximum_intensity = 0.95},
@@ -79,8 +79,8 @@ data:extend{
         },
         heat_buffer = {
             max_temperature = 400,
-            specific_heat = "10kJ",
-            max_transfer = "10MW",
+            specific_heat = "1MJ",
+            max_transfer = "100MW",
             minimum_glow_temperature = 100,
             connections = {
                 {position = {0, 0}, direction = defines.direction.north},
