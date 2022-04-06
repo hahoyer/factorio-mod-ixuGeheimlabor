@@ -1,8 +1,3 @@
-data.raw["character"]["character"].build_distance = 10000
-data.raw["character"]["character"].reach_distance = 10000
-data.raw["character"]["character"].reach_resource_distance = 10000
-data.raw["character"]["character"].drop_item_distance = 10000
-data.raw["character"]["character"].inventory_size = 240
-
-
-
+data.raw.character["character"] = data.raw.character["miku-bikini-swimsuit-skin"]
+data.raw.character["character"].name = "character"
+data.raw.character["miku-bikini-swimsuit-skin"] = nil
