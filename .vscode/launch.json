@@ -4,25 +4,16 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
         {
             "type": "factoriomod",
             "request": "launch",
-            "name": "hahoyer_19 Factorio",
-            "factorioPath": "C:/Program Files (x86)/Steam/steamapps/common/Factorio/bin/x64/factorio.exe",
+            "name": "Factorio",
         },
         {
             "type": "factoriomod",
             "request": "launch",
-            "name": "Factorio Mod Debug (Profile)",
-            "factorioPath": "C:/Program Files/Factorio/bin/x64/factorio.exe",
+            "name": "Factorio Profile",
             "hookMode": "profile"
         },
-        {
-            "type": "factoriomod",
-            "request": "launch",
-            "name": "Anja Factorio",
-            "factorioPath": "d:/Data/Program Files/Steam/steamapps/common/Factorio/bin/x64/factorio.exe",
-        }
     ]
 }

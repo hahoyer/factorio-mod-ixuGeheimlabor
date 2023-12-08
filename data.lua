@@ -1,3 +1,8 @@
+require "DrillDown.data"
+require "extended-pumpjack.data"
+local signals = require "Signals"
+signals.data()
+
 -- require "evo.data"
 for _, character in pairs(data.raw["character"]) do
     character.build_distance = 10000

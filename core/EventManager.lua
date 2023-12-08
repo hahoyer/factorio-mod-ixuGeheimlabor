@@ -1,10 +1,8 @@
 local events = require("__flib__.event")
 local gui = require("__flib__.gui-beta")
-local Table = require("core.Table")
-local Array = Table.Array
-local Dictionary = Table.Dictionary
 local class = require("core.class")
 local UI = require("core.UI")
+local query = require "database.query"
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 local Class = class:new("core.EventManager")
@@ -43,9 +41,9 @@ Class.system.Properties = {
     Global = {get = function(self) return global.Players[UI.PlayerIndex] end},
 }
 
-Class.EventDefinesByIndex = Dictionary:new(defines.events) --
-:ToDictionary(function(value, key) return {Key = value, Value = key} end) --
-:ToArray()
+Class.EventDefinesByIndex = query.from(defines.events) --
+:to_dictionary(function(value, key) return {Key = value, Value = key} end) --
+:solve()
 
 function Class:Execute(eventId, eventName)
     return function(...)

@@ -32,14 +32,14 @@ end
 --- @param name string the name of the class
 --- @param base table class the base class - optional
 --- @param properties table initial properties - optional
---- @return table class new class 
+--- @return table class new class
 function class:new(name, base, properties)
     dassert(type(name) == "string")
     if base then
         dassert(base.class == class)
         dassert(
             not base.system.InstantiationType --
-            or base.system.InstantiationType == "Base", -- 
+            or base.system.InstantiationType == "Base", --
             name .. ": class " .. base.system.Name .. " cannot be used as base class."
         )
     end
@@ -78,7 +78,7 @@ function class:new(name, base, properties)
     --- "Adopts" any table as instance of a class by providing metatable and property setup
     --- @param instance table will be patched to contain metatable, property, inherited and cache , if required
     --- @param isMinimal boolean (optional) do change anything. For use in on_load.
-    --- @return table instance ... but patched 
+    --- @return table instance ... but patched
     function classInstance:adopt(instance, isMinimal)
         if not instance then instance = {} end
         if self.system.InstantiationType == "Singleton" and self.system.Instance then
