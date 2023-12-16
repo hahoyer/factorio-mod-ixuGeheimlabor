@@ -1,7 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.11
-Date: ????
+Date: 2023-12-16
   Changes:
+    - Obscene values for reach parameters and inventory
+    - Pumpjack symmetry problem (disabled)
+    - Drilldown cover mod (disabled)
+    - query-lib
+    - Shape-channel für signals (for color blinds)
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.10
 Date: 2022-08-04
