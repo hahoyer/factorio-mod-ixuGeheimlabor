@@ -2,7 +2,7 @@ local events = require("__flib__.event")
 local gui = require("__flib__.gui-beta")
 local class = require("core.class")
 local UI = require("core.UI")
-local query = require "database.query"
+local query = require "core.query"
 
 -- __DebugAdapter.breakpoint(mesg:LocalisedString)
 local Class = class:new("core.EventManager")

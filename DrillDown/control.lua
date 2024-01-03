@@ -130,8 +130,8 @@ end
 function EventManager:new()
     local self = self:adopt {}
     self:SetHandler("on_init", self.OnInitialise)
-    self:SetHandler(Constants.Key.Down, self.OnDownKey)
-    self:SetHandler(Constants.Key.Up, self.OnUpKey)
+    self:SetHandler(Constants.ModName .. "-down", self.OnDownKey)
+    self:SetHandler(Constants.ModName .. "-up", self.OnUpKey)
 end
 
 return EventManager:new()

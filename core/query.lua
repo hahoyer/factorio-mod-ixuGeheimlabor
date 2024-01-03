@@ -2,14 +2,16 @@ local query = {
     Next =
     {
         from = function(self, index)
-            return pairs(self.Target)(self.Target, index)
+            if index then index = index.value end
+            local index, value = pairs(self.Values)(self.Values, index)
+            if index then return { value = index }, value end
         end,
 
         clone = function(self, index)
             while true do
                 local newIndex, value = self.Target:next(index)
                 if not newIndex then return end
-                if not self.Condition or self.Condition(value, newIndex) then return newIndex, value end
+                if not self.Condition or self.Condition(value, newIndex.value) then return newIndex, value end
                 index = newIndex
             end
         end,
@@ -17,20 +19,20 @@ local query = {
         select = function(self, index)
             local index, value = self.Target:next(index)
             if index then
-                return index, self.Transformation(value, index)
+                return  index, self.Transformation(value, index.value)
             end
         end,
 
         flatten = function(self, index)
             if not index then index = {} end
             while true do
-                local newIndex, value = self.Target:next(index[1])
+                local newIndex, value = self.Target:next(index.main)
                 if not newIndex then return end
-                local newSubIndex, subValue = value:next(index[2])
+                local newSubIndex, subValue = value:next(index.sub)
                 if newSubIndex then
-                    return { index[1], newSubIndex }, subValue
+                    return { main = index.main, sub = newSubIndex, value = newSubIndex }, subValue
                 end
-                index = { newIndex }
+                index = { main = newIndex }
             end
         end,
 
@@ -71,12 +73,26 @@ local query = {
             return { false, index }, value
         end,
 
+        concat = function(self, index)
+            local iterator = index or { is_at_target = true }
+            if iterator.is_at_target then
+                local nextIndex, value = self.Target:next { iterator = iterator.iterator, value = iterator.value }
+                if nextIndex then
+                    return { is_at_target = true, iterator = nextIndex.iterator, value = nextIndex.value }, value
+                end
+                iterator = { is_at_target = false }
+            end
+
+            local index, value = self.Other:next { iterator = iterator.iterator, value = iterator.value }
+            return index and { is_at_target = false, iterator = index.iterator, value = index.value } or nil, value
+        end,
+
         skip_until = function(self, index)
             if index then return self.Target:next(index) end
             while true do
                 local newIndex, value = self.Target:next(index)
                 if not newIndex then return end
-                if self.Index == index then return newIndex, value end
+                if index and self.Index == index.value then return newIndex, value end
                 index = newIndex
             end
         end,
@@ -104,15 +120,15 @@ function query:intersection(other)
 end
 
 function query:union(other)
-    return other:concat(other:where(function(entry) return not self:contains(entry) end))
+    return other:concat(other:clone(function(entry) return not self:contains(entry) end))
 end
 
 function query:except(other)
-    return self:where(function(entry) return not other:contains(entry) end)
+    return self:clone(function(entry) return not other:contains(entry) end)
 end
 
 function query:except_keys(other)
-    return self:where(function(_, key) return not other[key] end)
+    return self:clone(function(_, key) return not other[key] end)
 end
 
 function query:intersection_many()
@@ -135,6 +151,10 @@ function query:foreach(transformation)
     for key, value in self.next, self do
         transformation(value, key)
     end
+end
+
+function query:concat(other)
+    return query:new { Function = "concat", Other = other, Target = self }
 end
 
 function query:to_dictionary(getPair, on_dupkey)
@@ -165,7 +185,7 @@ end
 
 function query:append(entry)
     if self.Function == "from" then
-        table.insert(self.Target, entry)
+        table.insert(self.Values, entry)
     elseif self.Function == "append" then
         table.insert(self.Values, entry)
     else
@@ -217,12 +237,12 @@ end
 function query:top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     local result
     for key, value in self.next, self do
-        if allowMultiple ~= false then return { Key = key, Value = value } end
+        if allowMultiple ~= false then return { Key = key.value, Value = value } end
         if result then
             error(onMultiple and onMultiple(#self) or "More than one element found: (" ..
                 #self .. ").", 1)
         end
-        result = { Key = key, Value = value }
+        result = { Key = key.value, Value = value }
     end
 
     if result then return result end
@@ -230,6 +250,7 @@ function query:top(allowEmpty, allowMultiple, onEmpty, onMultiple)
     if allowEmpty == false or onEmpty then
         error(onEmpty and onEmpty() or "No elements found.", 1)
     end
+    return {}
 end
 
 function query:all(condition)
@@ -243,11 +264,34 @@ function query:solve(compact)
     local result = {}
     local index = 1
     for key, value in self.next, self do
-        if compact ~= false and type(key) == "number" then
-            key = index
-            index = index+1
+        local resultKey = key.value
+        if compact ~= false and type(resultKey) == "number" then
+            resultKey = index
+            index = index + 1
         end
-        result[key] = value
+        result[resultKey] = value
+    end
+    return result
+end
+
+function query:get_values(compact)
+    local result = {}
+    local index = 1
+    for _, value in self.next, self do
+        if compact == false or value then
+            result[index] = value
+            index = index + 1
+        end
+    end
+    return result
+end
+
+function query:get_keys()
+    local result = {}
+    local index = 1
+    for key, _ in self.next, self do
+        result[index] = key
+        index = index + 1
     end
     return result
 end
@@ -267,11 +311,12 @@ end
 function query:minimum(selector)
     if not selector then selector = function(value, _) return value end end
     return self:aggregate(nil, function(current, nextValue, nextKey)
-        if current and selector(current.Value, current.Key) <= selector(nextValue, nextKey)
+        local value = selector(nextValue, nextKey)
+        if current and current.Value <= value
         then
             return current
         else
-            return { Value = nextValue, Key = nextKey }
+            return { Value = value, Key = nextKey }
         end
     end)
 end
@@ -279,17 +324,18 @@ end
 function query:maximum(selector)
     if not selector then selector = function(value, _) return value end end
     return self:aggregate(nil, function(current, nextValue, nextKey)
-        if current and selector(current.Value, current.Key) >= selector(nextValue, nextKey)
+        local value = selector(nextValue, nextKey)
+        if current and current.Value >= value
         then
             return current
         else
-            return { Value = nextValue, Key = nextKey }
+            return { Value = value, Key = nextKey }
         end
     end)
 end
 
-function query:index_where(condition, index)
-    return query:skip_until(index):where(condition):top().Key
+function query:index_where(condition)
+    return self:clone(condition):top().Key
 end
 
 function query:skip_until(index)
@@ -297,7 +343,8 @@ function query:skip_until(index)
 end
 
 function query.from(target)
-    return query:new { Function = "from", Target = target or {} }
+    if getmetatable(target) == query then target = target:solve() end
+    return query:new { Function = "from", Values = target or {} }
 end
 
 return query
