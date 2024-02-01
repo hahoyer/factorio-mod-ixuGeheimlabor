@@ -1,7 +1,7 @@
 local gui = require("__flib__.gui")
 local Constants = require "Constants"
 local query = require "core.query"
-local Item = require "Inventory.Item"
+local Item = require "VirtualChest.Item"
 
 
 local function Global(tags)
@@ -16,15 +16,15 @@ local function Global(tags)
 end
 
 local function GetGuiLocation(player)
-    return Global { "Inventory", "player", player.name, "Location" }
+    return Global { "VirtualChest", "player", player.name, "Location" }
 end
 
 local function SetGuiLocation(player, location)
-    Global { "Inventory", "player", player.name }.Location = location
+    Global { "VirtualChest", "player", player.name }.Location = location
 end
 
 local function DestroyFloatingFrame(player)
-    local moduleName = "Inventory"
+    local moduleName = "VirtualChest"
     local name = Constants.ModName .. "." .. moduleName
     if player.gui.screen[name] then player.gui.screen[name].destroy() end
 end
@@ -122,7 +122,7 @@ end
 ---@return table LuaGuiElement references and subtables, built based on the values of ref throughout the GuiBuildStructure.
 local function CreateFloatingFrameWithContent(player, content, caption)
     if not options then options = {} end
-    local moduleName = "Inventory"
+    local moduleName = "VirtualChest"
 
     local result = CreateFrameWithContent(
         moduleName, player.gui.screen, content, caption, options
@@ -187,7 +187,7 @@ local function get_goods_panel(item)
         name = item.CommonKey,
         number = item.NumberOnSprite,
         tooltip = item.LocalisedName,
-        actions = { on_click = { module = "Inventory", action = "Click" } },
+        actions = { on_click = { module = "VirtualChest", action = "Click" } },
     }
 end
 
@@ -222,8 +222,8 @@ local function get_gui(groups)
                         tooltip = { "item-group-name." .. name },
                         ignored_by_interaction = not subGroup:any(),
                         actions = {
-                            on_click = { module = "Inventory", action = "Select" },
-                            on_gui_selected_tab_changed = { module = "Inventory", action = "SelectionChanged" }
+                            on_click = { module = "VirtualChest", action = "Select" },
+                            on_gui_selected_tab_changed = { module = "VirtualChest", action = "SelectionChanged" }
                         },
                     },
                     content = {
@@ -249,7 +249,7 @@ local function get_gui(groups)
                 }
             end
         ):get_values(),
-        actions = { on_gui_selected_tab_changed = { module = "Inventory", action = "Select" } },
+        actions = { on_gui_selected_tab_changed = { module = "VirtualChest", action = "Select" } },
     }
 end
 
@@ -291,11 +291,11 @@ end
 
 local function CloseGui(player)
     DestroyFloatingFrame(player)
-    Global { "Inventory", "player", player.name }.is_visible = false
+    Global { "VirtualChest", "player", player.name }.is_visible = false
 end
 
 local function UpdateGui(player)
-    local moduleName = "Inventory"
+    local moduleName = "VirtualChest"
     local name = Constants.ModName .. "." .. moduleName
     if not player.gui.screen[name] then return end
     local data = player.gui.screen[name]
@@ -303,18 +303,18 @@ local function UpdateGui(player)
     local groups = get_groups(player)
     local template = get_gui(groups)
     local result = gui.build(data,{template})
-    local selectedTab = Global { "Inventory", "player", player.name }.SelectedGroup
+    local selectedTab = Global { "VirtualChest", "player", player.name }.SelectedGroup
     SelectLastTab(result.GroupTabs, selectedTab)
 end
 
 local function OpenGui(player)
     local groups = get_groups(player)
     local template = get_gui(groups)
-    local result = CreateFloatingFrameWithContent(player, template, { "Inventory.Main" })
+    local result = CreateFloatingFrameWithContent(player, template, { "VirtualChest.Main" })
     if result.Filter then result.Filter.focus() end
-    local selectedTab = Global { "Inventory", "player", player.name }.SelectedGroup
+    local selectedTab = Global { "VirtualChest", "player", player.name }.SelectedGroup
     SelectLastTab(result.GroupTabs, selectedTab)
-    Global { "Inventory", "player", player.name }.is_visible = true
+    Global { "VirtualChest", "player", player.name }.is_visible = true
 end
 
 local function OnGuiEvent(event)
@@ -333,20 +333,20 @@ local function OnGuiEvent(event)
         local cursor = player.cursor_stack
         cursor.transfer_stack(stack)
     elseif message.action == "Select" then
-        Global { "Inventory", "player", player.name }.SelectedGroup = event.element.name
+        Global { "VirtualChest", "player", player.name }.SelectedGroup = event.element.name
     end
 end
 
 local function OnMainInventoryChanged(event)
     local player = game.players[event.player_index]
-    if Global { "Inventory", "player", player.name }.is_visible then
+    if Global { "VirtualChest", "player", player.name }.is_visible then
         UpdateGui(player)
     end
 end
 
 script.on_event(Constants.ModName .. "-inventory", function(event)
     local player = game.players[event.player_index]
-    if Global { "Inventory", "player", player.name }.is_visible then CloseGui(player) else OpenGui(player) end
+    if Global { "VirtualChest", "player", player.name }.is_visible then CloseGui(player) else OpenGui(player) end
 end
 )
 
