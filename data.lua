@@ -1,6 +1,6 @@
 require "core.query-test"
-require "DrillDown.data"
-require "extended-pumpjack.data"
+-- require "DrillDown.data"
+-- require "extended-pumpjack.data"
 require "Inventory.data"
 local signals = require "Signals"
 signals.data()
