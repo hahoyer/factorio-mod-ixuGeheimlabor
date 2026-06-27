@@ -1,5 +1,3 @@
-local events = require("__flib__.event")
-local gui = require("__flib__.gui-beta")
 local class = require("core.class")
 local UI = require("core.UI")
 local query = require "core.query"
@@ -9,38 +7,23 @@ local Class = class:new("core.EventManager")
 
 Class.system.Abstract = true
 
-Class.system.Properties = {
-    Player = {
-        get = function() return UI.Player end,
-        set = function(_, value)
-            local lastPlayerIndex = UI.PlayerIndex
-            local lastPlayer = UI.Player
-            if value then
-                if type(value) == "number" then
-                    UI.PlayerIndex = value
-                elseif type(value) == "table" and value.object_name == "LuaPlayer" and value then
-                    UI.PlayerIndex = value.index
-                else
-                    dassert()
-                end
-
-                if game then UI.Player = game.players[UI.PlayerIndex] end
-            else
-                dassert()
-                UI.Player = nil
-                UI.PlayerIndex = nil
-            end
-
-            dassert(lastPlayerIndex == nil or lastPlayerIndex == UI.PlayerIndex)
-            dassert(lastPlayer == nil or lastPlayer == UI.Player)
-        end,
-    },
-    Global = { get = function(self) return storage.Players[UI.PlayerIndex] end },
-}
-
-Class.EventDefinesByIndex = query.from(defines.events)                     --
+Class.EventDefinesByIndex = query.from(defines.events)                           --
     :to_dictionary(function(value, key) return { Key = value, Value = key } end) --
     :solve()
+
+Class.Events = {
+    Register = function(eventId, handler)
+        if eventId == "on_init" then
+            script.on_init(handler)
+        elseif eventId == "on_load" then
+            script.on_load(handler)
+        elseif eventId == "on_configuration_changed" then
+            script.on_configuration_changed(handler)
+        else
+            script.on_event(defines.events[eventId], handler)
+        end
+    end
+}
 
 function Class:Execute(eventId, eventName)
     return function(...)
@@ -58,11 +41,11 @@ end
 
 function Class:RemoveIfEmpty(handlers, eventId)
     if not next(handlers) then
-        local eventRegistrar = events[eventId]
+        local eventRegistrar = self.Events[eventId]
         if eventRegistrar then
             eventRegistrar(nil)
         else
-            events.register(eventId, nil)
+            self.Events.Register(eventId, nil)
         end
     end
 end
@@ -92,9 +75,9 @@ function Class:SetHandler(eventId, handler, identifier)
     if not Class.Handlers then Class.Handlers = {} end
     if not identifier then identifier = "default" end
 
-    local eventName =                                                   --
+    local eventName =                                                       --
         type(eventId) == "number" and Class.EventDefinesByIndex[eventId] or --
-        eventId == 0 and "on_tick" or                                   --
+        eventId == 0 and "on_tick" or                                       --
         eventId
 
     local handlers = Class.Handlers[eventName]
@@ -108,11 +91,11 @@ function Class:SetHandler(eventId, handler, identifier)
         Class.Handlers[eventName] = handlers
 
         local watchedEvent = Class:Execute(eventId, eventName)
-        local eventRegistrar = events[eventId]
+        local eventRegistrar = self.Events[eventId]
         if eventRegistrar then
             eventRegistrar(watchedEvent)
         else
-            events.register(eventId, watchedEvent)
+            self.Events.Register(eventId, watchedEvent)
         end
     end
 
