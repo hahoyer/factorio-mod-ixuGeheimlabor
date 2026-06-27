@@ -5,7 +5,7 @@ local Item = require "VirtualChest.Item"
 
 
 local function Global(tags)
-    local result = global
+    local result = storage
     for _, value in ipairs(tags) do
         if not result[value] then
             result[value] = {}
@@ -302,7 +302,7 @@ local function UpdateGui(player)
     data.Tabs.destroy()
     local groups = get_groups(player)
     local template = get_gui(groups)
-    local result = gui.build(data,{template})
+    local result = gui.build(data, { template })
     local selectedTab = Global { "VirtualChest", "player", player.name }.SelectedGroup
     SelectLastTab(result.GroupTabs, selectedTab)
 end

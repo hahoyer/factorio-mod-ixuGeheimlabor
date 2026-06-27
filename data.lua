@@ -1,9 +1,10 @@
 require "core.query-test"
 -- require "DrillDown.data"
 -- require "extended-pumpjack.data"
-require "Inventory.data"
-local signals = require "Signals"
-signals.data()
+-- require "Inventory.data"
+-- local signals = require "Signals"
+-- signals.data()
+require "PersonalRobots.data"
 
 -- require "evo.data"
 for _, character in pairs(data.raw["character"]) do

@@ -16,7 +16,7 @@ local EventManager = core.class:new(
 )
 
 function EventManager:OnInitialise(event)
-    global.sublevel_data = { map = {}, list = {} }
+    storage.sublevel_data = { map = {}, list = {} }
 end
 
 ---Create the random generator for this sublevel
@@ -24,7 +24,7 @@ end
 ---@param index number the sublevel. 0 is toplevel (named stack_name)
 ---@return table then name of the surface created
 local function create_random_generator(stack_name, index)
-    local above_level_name = index == 1 and stack_name or global.sublevel_data.list[stack_name][index - 1].name
+    local above_level_name = index == 1 and stack_name or storage.sublevel_data.list[stack_name][index - 1].name
     local seed = game.surfaces[above_level_name].map_gen_settings.seed
     return game.create_random_generator(seed)
 end
@@ -60,7 +60,7 @@ local function create_surface(name, settings)
     surface.morning = 1 - 0.00001
 end
 
----Create a sublevel - a surface - and setup global data
+---Create a sublevel - a surface - and setup storage data
 ---@param stack_name string the name of the stack - actually the name of the top surface
 ---@param index number the sublevel. 0 is toplevel (named stack_name)
 ---@return string then name of the surface created
@@ -72,8 +72,8 @@ local function CreateSubLevel(stack_name, index)
     local settings = initialize_map_gen_settings(stack_name, index, random_generator() * math.pow(2, 32))
     create_surface(name, settings)
 
-    global.sublevel_data.list[stack_name][index] = { name = name }
-    global.sublevel_data.map[name] = { stack_name = stack_name, index = index }
+    storage.sublevel_data.list[stack_name][index] = { name = name }
+    storage.sublevel_data.map[name] = { stack_name = stack_name, index = index }
 
     return name
 end
@@ -83,10 +83,10 @@ end
 ---@param index number
 ---@return any surface name of the sublevel
 local function EnsureSublevel(stack_name, index)
-    local sublevels = global.sublevel_data.list[stack_name]
+    local sublevels = storage.sublevel_data.list[stack_name]
     if not sublevels then
         sublevels = {}
-        global.sublevel_data.list[stack_name] = sublevels
+        storage.sublevel_data.list[stack_name] = sublevels
     end
 
     if index <= 0 then return stack_name end
@@ -105,11 +105,11 @@ local function elevator_travel(player_index, delta)
     if delta == 0 then return end
 
     local player = game.players[player_index]
-    local sublevel_data = global.sublevel_data.map[player.surface.name]
+    local sublevel_data = storage.sublevel_data.map[player.surface.name]
 
     if not sublevel_data then
         sublevel_data = { stack_name = player.surface.name, index = 0 }
-        global.sublevel_data.map[player.surface.name] = sublevel_data
+        storage.sublevel_data.map[player.surface.name] = sublevel_data
     end
 
     local target_level = EnsureSublevel(sublevel_data.stack_name, sublevel_data.index - delta)

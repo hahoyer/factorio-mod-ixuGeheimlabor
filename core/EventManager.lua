@@ -13,11 +13,9 @@ Class.system.Properties = {
     Player = {
         get = function() return UI.Player end,
         set = function(_, value)
-
             local lastPlayerIndex = UI.PlayerIndex
             local lastPlayer = UI.Player
             if value then
-
                 if type(value) == "number" then
                     UI.PlayerIndex = value
                 elseif type(value) == "table" and value.object_name == "LuaPlayer" and value then
@@ -27,7 +25,6 @@ Class.system.Properties = {
                 end
 
                 if game then UI.Player = game.players[UI.PlayerIndex] end
-
             else
                 dassert()
                 UI.Player = nil
@@ -38,12 +35,12 @@ Class.system.Properties = {
             dassert(lastPlayer == nil or lastPlayer == UI.Player)
         end,
     },
-    Global = {get = function(self) return global.Players[UI.PlayerIndex] end},
+    Global = { get = function(self) return storage.Players[UI.PlayerIndex] end },
 }
 
-Class.EventDefinesByIndex = query.from(defines.events) --
-:to_dictionary(function(value, key) return {Key = value, Value = key} end) --
-:solve()
+Class.EventDefinesByIndex = query.from(defines.events)                     --
+    :to_dictionary(function(value, key) return { Key = value, Value = key } end) --
+    :solve()
 
 function Class:Execute(eventId, eventName)
     return function(...)
@@ -75,10 +72,10 @@ function FormatData(data)
 end
 
 function Class:Enter(eventName, eventId, identifier)
-    local data = {eventName, eventId, identifier}
+    local data = { eventName, eventId, identifier }
     --ilog(">>>EnterEvent " .. FormatData(data))
     local oldIndent = nil --AddIndent()
-    self.Active = {data, self.Active, oldIndent}
+    self.Active = { data, self.Active, oldIndent }
 end
 
 function Class:Leave()
@@ -95,15 +92,15 @@ function Class:SetHandler(eventId, handler, identifier)
     if not Class.Handlers then Class.Handlers = {} end
     if not identifier then identifier = "default" end
 
-    local eventName = --
-    type(eventId) == "number" and Class.EventDefinesByIndex[eventId] or --
-    eventId == 0 and "on_tick" or --
-    eventId
+    local eventName =                                                   --
+        type(eventId) == "number" and Class.EventDefinesByIndex[eventId] or --
+        eventId == 0 and "on_tick" or                                   --
+        eventId
 
     local handlers = Class.Handlers[eventName]
     dassert(
         not handlers or identifier ~= "default",
-            "handler for event " .. eventName .. " already registered. Use identifier"
+        "handler for event " .. eventName .. " already registered. Use identifier"
     )
 
     if not handlers then
@@ -121,10 +118,9 @@ function Class:SetHandler(eventId, handler, identifier)
 
     dassert(not handlers[identifier] or handlers[identifier] == handler or handler == nil) -- another handler with the same identifier is already installed for that event
 
-    handlers[identifier] = {Instance = self, Handler = handler}
+    handlers[identifier] = { Instance = self, Handler = handler }
 
     Class:RemoveIfEmpty(handlers, eventId)
 end
 
 return Class
-
